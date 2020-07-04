@@ -10,7 +10,8 @@ import System.IO (isEOF)
 main :: IO ()
 main = do 
     {
-    getArgs >>= mapM_ (\file -> readObjectFromFile file);
+    getArgs >>= mapM_ (\file -> readObjectFromFileIntoJ file);
+    --test2;
     putStrLn ("Press any key to exit");
     line <- getLine;
     putStrLn ("Exiting");

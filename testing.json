@@ -1,0 +1,16 @@
+{
+    "bigNode": {
+        "title": "the node 1",
+        "amount": 11
+    },
+    "bigNode2": {
+        "title": "the node 2",
+        "amount": 22
+    },
+    "bigNode3": {
+        "title": "the node 3",
+        "amount": 33
+    }
+     
+     
+}
