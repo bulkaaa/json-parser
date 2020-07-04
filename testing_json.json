@@ -1,0 +1,20 @@
+{
+    "bigNode": {
+        "title": "the main node",
+		"nestedContent1": {
+            "title": "the first nested content",
+			"nestedContent2": {
+                "nestedContent3": {
+                    "name": "NAME1",
+					"alias": "alias of the name",
+					"description": "short description of the thing",
+					"acronym": "n1",
+					"definition": {
+                        "content": "some contenty content",
+						"list of related stuff": ["NAME2", "NAME3"]
+                    }
+                }
+            }
+        }
+    }
+}
