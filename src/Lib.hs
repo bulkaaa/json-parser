@@ -30,12 +30,14 @@ bsFromHandle reader h = go
             go
 {-# INLINABLE bsFromHandle #-}
 
+bsBlocks :: [Char] -> Producer' BS.ByteString IO ()
 bsBlocks path = do
   h <- lift $ IO.openFile path IO.ReadMode
   bsFromHandle (\h -> BS.hGet h 16384) h
 
 -- read a line-oriented JSON file into object, counting parsing errors
 
+readObjectFromFile :: [Char] -> IO ()
 readObjectFromFile path = do
   let doit !good !bad = do
         m <- PA.decode
