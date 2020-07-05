@@ -14,6 +14,14 @@ import qualified Pipes.Prelude as P
 import qualified Data.Vector as V
 import qualified Data.ByteString as BS
 import Control.Monad
+import qualified Data.HashMap.Strict as HM
+
+import Data.JsonStream.Parser
+import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString.Lazy.Char8 as BL
+import qualified Data.Aeson.Types as AT
+
+import System.Random
 
 import qualified System.IO as IO
 
@@ -25,71 +33,43 @@ test2 =  do
     Right a  -> putStrLn $ "got a Person: " ++ show a
 
 
--- example of how to use `encodeArray`
---test = runEffect $ PA.encodeArray peopleVector >-> (forever $ await >>= (lift . BS.putStr) )
-
-bsFromHandle :: MonadIO m => (IO.Handle -> IO BS.ByteString) -> IO.Handle -> Producer' BS.ByteString m ()
-bsFromHandle reader h = go
-  where
-    go = do
-        eof <- liftIO $ IO.hIsEOF h
-        unless eof $ do
-            str <- liftIO $ reader h
-            yield str
-            go
-{-# INLINABLE bsFromHandle #-}
-
---TODO: find out difference
-bsLines :: [Char] -> Producer' BS.ByteString IO ()
-bsLines path = do
-  h <- lift $ IO.openFile path IO.ReadMode
-  bsFromHandle BS.hGetLine h
-
-bsBlocks :: [Char] -> Producer' BS.ByteString IO ()
-bsBlocks path = do
-  h <- lift $ IO.openFile path IO.ReadMode
-  bsFromHandle (\h -> BS.hGet h 16384) h
-
-
 --The definition of Object in Data.Aeson is HashMap Text Value - 
 --(you can think of them as glorified list of tuples; they even have list functions [2]).
 -- read a line-oriented JSON file into object, counting parsing errors
 
-readObjectFromFile :: [Char] -> IO ()
-readObjectFromFile path = do
-  let doit !good !bad = do
-        m <- PA.decode
-        let _ = m :: Maybe (Either PA.DecodingError Value)
-        case m of
-          Nothing        -> return (good,bad)
-          Just x         -> do
-            case x of
-              Left e  -> do 
-                  lift $ putStrLn "parse error"; 
-                  doit good (bad+1);
-              Right a -> do 
-                  lift $ putStrLn "ok"; 
-                  lift $ putStrLn $ "got aN OBJecT: " ++ show a
-                  doit (good+1) bad;
-  (good,bad) <- evalStateT (doit 0 0) (bsLines path)
-  print (good, bad)
+valueParser :: Pipe B.ByteString (Value) IO ()
+valueParser = do_parse parse_output
+  where parse_output :: (ParseOutput Value)
+        parse_output = runParser (value)
+        do_parse :: ParseOutput Value -> Pipe B.ByteString (Value) IO ()
+        do_parse output = case output of
+            ParseYield value new_output -> do
+              lift $ putStrLn "emitting new json value"
+              lift $ print value
+              yield value
+              do_parse new_output
+            ParseNeedData cont -> do
+              lift $ putStrLn "in need of new data"
+              input <- await
+              lift $ putStrLn $ "injecting " ++ (B.unpack input) ++ " into the parser"
+              do_parse $ cont input
+            ParseDone remaining -> do
+              lift $ putStrLn "parsing done"
+              return ()
+            ParseFailed err -> lift $ putStrLn $ "PARSING ERROR: " ++ err
 
-readObjectFromFileIntoJ :: [Char] -> IO ()
-readObjectFromFileIntoJ path = do
-  let doit !good !bad = do
-        m <- PA.decode
-        let _ = m :: Maybe (Either PA.DecodingError Value)
-        case m of
-          Nothing        -> return (good,bad)
-          Just x         -> do
-            case x of
-              Left e  -> do 
-                  lift $ putStrLn "parse error"; 
-                  doit good (bad+1)
-              Right a -> do 
-                  lift $ putStrLn "OK";
-                  lift $ print a;
-                  v <- lift $ showExtractProp ("bigNode3"::String) a;
-                  doit (good+1) bad
-  (good,bad) <- evalStateT (doit 0 0) (bsLines path)
-  print (good, bad)
+stdinProducer :: IO.Handle -> Producer B.ByteString IO ()
+stdinProducer h = do
+  eof <- lift $ IO.hIsEOF h
+  unless eof $ do
+    str <- lift (B.hGet h 100)
+    yield str
+    stdinProducer h
+
+bsWriter :: Consumer Value IO ()
+bsWriter = do
+  lift $ B.putStrLn "Writer"
+  val <- await
+  lift $ print val
+  bsWriter
+

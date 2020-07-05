@@ -1,16 +1,17 @@
 {
-    "bigNode": {
-        "title": "the node 1",
-        "amount": 11
+
+    "bigNode3": {
+        "title": "c",
+        "smallNode3": {
+            "title": "cccc"
+        }
     },
     "bigNode2": {
-        "title": "the node 2",
-        "amount": 22
-    },
-    "bigNode3": {
-        "title": "the node 3",
-        "amount": 33
+        "title": "b",
+        "smallNode3": {
+            "title": "bbbb"
+        }
     }
-     
+
      
 }

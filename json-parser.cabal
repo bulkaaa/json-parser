@@ -27,4 +27,8 @@ executable json-parser
                      , aeson
                      , text
                      , unordered-containers
-              
+                     , lens-aeson
+                     , lens
+                     , json-stream >= 0.4.2.3
+                     , random
+                     , pipes-bytestring
