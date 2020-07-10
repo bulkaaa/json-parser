@@ -16,19 +16,14 @@ extra-source-files:  README.md
 executable json-parser
   hs-source-dirs:      src
   main-is:             Main.hs
-  other-modules:       Lib, MyJSONData
+  other-modules:       Lib
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5
                      , pipes    
-                     , pipes-aeson
                      , pipes-parse
-                     , bytestring
-                     , vector
-                     , aeson
+            
                      , text
-                     , unordered-containers
-                     , lens-aeson
-                     , lens
-                     , json-stream >= 0.4.2.3
-                     , random
-                     , pipes-bytestring
+                    
+                     , attoparsec
+                     , pipes-attoparsec
+                     , mtl
