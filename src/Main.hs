@@ -1,3 +1,10 @@
+{-|
+Module      : Main
+Description : A main module containing user interface for the program
+Copyright   : Aleksandra Bulka
+-}
+
+
 module Main where
 
 import System.Environment
@@ -11,7 +18,7 @@ import Pipes
 import Pipes.Attoparsec
 import System.IO
 
-
+-- |A helper function to parse a humanly-readable path to a node wrom user
 getPath :: IO [String]
 getPath = do
     input <- getLine
@@ -21,10 +28,12 @@ getPath = do
             more_path <- getPath
             return (path_part : more_path)
 
+-- |A helper function for `getPath` checking for end of inputting a path
 parseInput :: String -> Maybe String
 parseInput input = if input == ":q" then Nothing else (readMaybe input):: Maybe String
 
 
+-- |A main function for getting the input file name from user, what operation he would like to perform and with which parameters.
 main = do
   putStrLn "Please input file name"  
   inFile <- getLine
@@ -38,8 +47,7 @@ main = do
         key <- getLine
         putStrLn "Enter value for this key"  
         val <- getLine
-        runStateT (runEffect $ parsingProducer hIn  >-> valueModifier (Modify key val) >-> bsWriter hOut) ([], Nothing)
-        --either brac z lewej strony jak blad
+        (runStateT (runEffect $ parsingProducer hIn  >-> valueModifier (Modify key val) >-> bsWriter hOut) ([], Nothing))
       "ADD" -> do 
         putStrLn "Enter key to be added"  
         key <- getLine
